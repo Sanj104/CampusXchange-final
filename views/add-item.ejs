@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Item - CampusXchange</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/items/add" class="active">Sell Item</a>
+        <a href="/cart">Cart</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="add-item-container">
+      <h2>Sell Your Item</h2>
+      <form id="addItemForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="itemName">Item Name</label>
+          <input type="text" id="itemName" name="itemName" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" name="department" required>
+            <option value="">Select Department</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Mechanical">Mechanical</option>
+            <option value="Civil">Civil</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="semester">Semester</label>
+          <select id="semester" name="semester" required>
+            <option value="">Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+            <option value="5">Semester 5</option>
+            <option value="6">Semester 6</option>
+            <option value="7">Semester 7</option>
+            <option value="8">Semester 8</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Price (₹)</label>
+          <input type="number" id="price" name="price" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Item Image</label>
+          <input type="file" id="image" name="image" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn-primary">Add Item</button>
+      </form>
+      <div id="message"></div>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const messageDiv = document.getElementById('message');
+
+      try {
+        const res = await fetch('/items/add', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          messageDiv.innerHTML = '<p class="success">Item added successfully! Redirecting...</p>';
+          setTimeout(() => window.location.href = '/', 1500);
+        } else {
+          messageDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        }
+      } catch (error) {
+        messageDiv.innerHTML = '<p class="error">An error occurred. Please try again.</p>';
+      }
+    });
+
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

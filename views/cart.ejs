@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart - CampusXchange</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/items/add">Sell Item</a>
+        <a href="/cart" class="active">Cart</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h2>Your Shopping Cart</h2>
+    
+    <% if (cartItems.length === 0) { %>
+      <div class="empty-cart">
+        <p>No items in cart</p>
+        <a href="/" class="btn-primary">Browse Items</a>
+      </div>
+    <% } else { %>
+      <div class="cart-container">
+        <div class="cart-items">
+          <% cartItems.forEach((item, index) => { %>
+            <div class="cart-item">
+              <img src="<%= item.image %>" alt="<%= item.itemName %>">
+              <div class="cart-item-details">
+                <h3><%= item.itemName %></h3>
+                <p class="item-department"><%= item.department %></p>
+                <p class="item-semester">Semester <%= item.semester %></p>
+                <p class="item-price">₹<%= item.price %></p>
+              </div>
+              <form method="POST" action="/remove-from-cart" class="remove-form">
+                <input type="hidden" name="index" value="<%= index %>">
+                <button type="submit" class="btn-remove">Remove</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="cart-summary">
+          <h3>Order Summary</h3>
+          <div class="summary-row">
+            <span>Subtotal (<%= cartItems.length %> items)</span>
+            <span>₹<%= total %></span>
+          </div>
+          <div class="summary-row total">
+            <span><strong>Total</strong></span>
+            <span><strong>₹<%= total %></strong></span>
+          </div>
+          <a href="/checkout" class="btn-primary btn-checkout">Proceed to Checkout</a>
+        </div>
+      </div>
+    <% } %>
+  </main>
+
+  <script>
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

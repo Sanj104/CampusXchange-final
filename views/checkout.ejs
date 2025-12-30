@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - CampusXchange</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="checkout-success">
+      <div class="success-icon">✓</div>
+      <h2>Order Placed Successfully!</h2>
+      <p>Your order has been confirmed. The seller(s) will be notified via email.</p>
+      
+      <div class="order-details">
+        <h3>Order Details</h3>
+        <p><strong>Order ID:</strong> <%= order._id %></p>
+        <p><strong>Total Amount:</strong> ₹<%= order.totalPrice %></p>
+        
+        <div class="order-items">
+          <h4>Items Ordered:</h4>
+          <% order.items.forEach(item => { %>
+            <div class="order-item">
+              <p><strong><%= item.itemName %></strong></p>
+              <p><%= item.department %> - Semester <%= item.semester %></p>
+              <p>Price: ₹<%= item.price %></p>
+              <p class="seller-info">Seller: <%= item.sellerName %> (<%= item.sellerEmail %>)</p>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="next-steps">
+        <h4>Next Steps:</h4>
+        <ul>
+          <li>The seller will contact you via email to arrange pickup/delivery</li>
+          <li>Check your email for order confirmation</li>
+          <li>Complete the transaction directly with the seller</li>
+        </ul>
+      </div>
+
+      <a href="/" class="btn-primary">Continue Shopping</a>
+    </div>
+  </main>
+
+  <script>
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your EmailJS public key
+    })();
+
+    // Send emails to sellers
+    const orderData = <%- JSON.stringify(order) %>;
+    
+    orderData.items.forEach(item => {
+      const templateParams = {
+        to_email: item.sellerEmail,
+        seller_name: item.sellerName,
+        buyer_name: orderData.buyerName,
+        buyer_email: orderData.buyerEmail,
+        item_name: item.itemName,
+        item_price: item.price,
+        order_id: orderData._id
+      };
+
+      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+        .then(function(response) {
+          console.log('Email sent to ' + item.sellerEmail, response);
+        }, function(error) {
+          console.log('Email failed to ' + item.sellerEmail, error);
+        });
+    });
+
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

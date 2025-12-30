@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusXchange - Campus Marketplace</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo">CampusXchange</h1>
+      <div class="nav-links">
+        <% if (user) { %>
+          <a href="/items/add">Sell Item</a>
+          <a href="/cart">Cart</a>
+          <button onclick="logout()">Logout</button>
+        <% } else { %>
+          <a href="/auth/login">Login</a>
+          <a href="/auth/signup">Signup</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="filters">
+      <h2>Browse Items</h2>
+      <div class="filter-controls">
+        <select id="departmentFilter">
+          <option value="">All Departments</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Mechanical">Mechanical</option>
+          <option value="Civil">Civil</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="semesterFilter">
+          <option value="">All Semesters</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+        </select>
+        <button onclick="applyFilters()">Filter</button>
+        <button onclick="clearFilters()">Clear</button>
+      </div>
+    </section>
+
+    <section id="itemsContainer" class="items-grid">
+      <!-- Items will be loaded here dynamically -->
+    </section>
+  </main>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
+
+
