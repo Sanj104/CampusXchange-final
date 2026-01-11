@@ -8,16 +8,19 @@
 </head>
 <body>
   <nav class="navbar">
-    <div class="container">
-      <h1 class="logo"><a href="/">CampusXchange</a></h1>
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/items/add">Sell Item</a>
-        <a href="/cart" class="active">Cart</a>
-        <button onclick="logout()">Logout</button>
-      </div>
+  <div class="container">
+    <h1 class="logo"><a href="/">CampusXchange</a></h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <% if (isAdmin) { %>
+        <a href="/admin/dashboard">Admin Panel</a>
+      <% } %>
+      <a href="/items/add">Sell Item</a>
+      <a href="/cart" class="active">Cart</a>
+      <button onclick="logout()">Logout</button>
     </div>
-  </nav>
+  </div>
+</nav>
 
   <main class="container">
     <h2>Your Shopping Cart</h2>

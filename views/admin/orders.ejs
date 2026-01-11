@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Orders - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/items">Items</a>
+        <a href="/admin/orders" class="active">Orders</a>
+        <a href="/">Main Site</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container admin-container">
+    <div class="admin-header">
+      <h2>Manage Orders</h2>
+      <p>Total Orders: <%= orders.length %></p>
+    </div>
+
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Buyer</th>
+            <th>Items Count</th>
+            <th>Total Amount</th>
+            <th>Order Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach(order => { %>
+            <tr>
+              <td><code><%= order._id %></code></td>
+              <td>
+                <%= order.buyer.name %><br>
+                <small class="text-muted"><%= order.buyer.email %></small>
+              </td>
+              <td><%= order.items.length %> items</td>
+              <td class="price-cell">₹<%= order.totalPrice %></td>
+              <td><%= new Date(order.createdAt).toLocaleString() %></td>
+              <td class="action-buttons-cell">
+                <a href="/admin/orders/<%= order._id %>" class="btn-sm btn-info">View Details</a>
+                <form method="POST" action="/admin/orders/delete/<%= order._id %>" style="display:inline;">
+                  <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Delete this order?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

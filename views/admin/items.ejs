@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Items - Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/items" class="active">Items</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/">Main Site</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container admin-container">
+    <div class="admin-header">
+      <h2>Manage Items</h2>
+      <p>Total Items: <%= items.length %></p>
+    </div>
+
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Item Name</th>
+            <th>Department</th>
+            <th>Semester</th>
+            <th>Price</th>
+            <th>Seller</th>
+            <th>Posted Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% items.forEach(item => { %>
+            <tr>
+              <td>
+                <img src="<%= item.image %>" alt="<%= item.itemName %>" class="table-image">
+              </td>
+              <td><strong><%= item.itemName %></strong></td>
+              <td><%= item.department %></td>
+              <td>Semester <%= item.semester %></td>
+              <td class="price-cell">₹<%= item.price %></td>
+              <td>
+                <%= item.seller.name %><br>
+                <small class="text-muted"><%= item.seller.email %></small>
+              </td>
+              <td><%= new Date(item.createdAt).toLocaleDateString() %></td>
+              <td>
+                <form method="POST" action="/admin/items/delete/<%= item._id %>" style="display:inline;">
+                  <button type="submit" class="btn-sm btn-danger" onclick="return confirm('Delete this item?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

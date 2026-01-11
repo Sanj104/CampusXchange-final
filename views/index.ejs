@@ -8,21 +8,25 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+
   <nav class="navbar">
-    <div class="container">
-      <h1 class="logo">CampusXchange</h1>
-      <div class="nav-links">
-        <% if (user) { %>
-          <a href="/items/add">Sell Item</a>
-          <a href="/cart">Cart</a>
-          <button onclick="logout()">Logout</button>
-        <% } else { %>
-          <a href="/auth/login">Login</a>
-          <a href="/auth/signup">Signup</a>
+  <div class="container">
+    <h1 class="logo">CampusXchange</h1>
+    <div class="nav-links">
+      <% if (user) { %>
+        <% if (isAdmin) { %>
+          <a href="/admin/dashboard">Admin Panel</a>
         <% } %>
-      </div>
+        <a href="/items/add">Sell Item</a>
+        <a href="/cart">Cart</a>
+        <button onclick="logout()">Logout</button>
+      <% } else { %>
+        <a href="/auth/login">Login</a>
+        <a href="/auth/signup">Signup</a>
+      <% } %>
     </div>
-  </nav>
+  </div>
+</nav>
 
   <main class="container">
     <section class="filters">

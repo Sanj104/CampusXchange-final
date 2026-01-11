@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - CampusXchange</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/admin/dashboard" class="active">Dashboard</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/items">Items</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/">Main Site</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container admin-container">
+    <div class="admin-header">
+      <h2>Admin Dashboard</h2>
+      <p>Welcome back, <%= user.name %>!</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-details">
+          <h3><%= stats.totalUsers %></h3>
+          <p>Total Users</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-details">
+          <h3><%= stats.totalItems %></h3>
+          <p>Total Items</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-details">
+          <h3><%= stats.totalOrders %></h3>
+          <p>Total Orders</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-details">
+          <h3>₹<%= stats.totalRevenue %></h3>
+          <p>Total Revenue</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-buttons">
+        <a href="/admin/users" class="admin-btn">Manage Users</a>
+        <a href="/admin/items" class="admin-btn">Manage Items</a>
+        <a href="/admin/orders" class="admin-btn">View Orders</a>
+        <a href="/items/add" class="admin-btn">Add New Item</a>
+      </div>
+    </div>
+
+    <div class="admin-info">
+      <h3>Admin Information</h3>
+      <div class="info-card">
+        <p><strong>Your Name:</strong> <%= user.name %></p>
+        <p><strong>Your Email:</strong> <%= user.email %></p>
+        <p><strong>Role:</strong> Administrator</p>
+        <p><strong>Login Time:</strong> <%= new Date().toLocaleString() %></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function logout() {
+      const res = await fetch('/auth/logout', { method: 'POST' });
+      if (res.ok) window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

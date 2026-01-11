@@ -4,6 +4,7 @@ const session = require('express-session');
 const path = require('path');
 require('dotenv').config();
 const dbconnect = require('./config/db');
+const adminRoutes = require('./routes/admin');
 
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
@@ -36,9 +37,19 @@ app.use(session({
   }
 }));
 
-// Make user available in all views
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.user = req.session.userId || null;
+  if (req.session.userId) {
+    try {
+      const User = require('./models/User');
+      const user = await User.findById(req.session.userId);
+      res.locals.isAdmin = user && user.role === 'admin';
+    } catch (error) {
+      res.locals.isAdmin = false;
+    }
+  } else {
+    res.locals.isAdmin = false;
+  }
   next();
 });
 
@@ -46,6 +57,7 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes);
 app.use('/items', itemRoutes);
 app.use('/', cartRoutes);
+app.use('/admin', adminRoutes);
 
 // Home route
 app.get('/', (req, res) => {
