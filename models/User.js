@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
   enum: ['user', 'admin'],
   default: 'user'
   },
-  cart: [{
+
+ cart: [{
     itemId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Item'
@@ -31,7 +32,10 @@ const userSchema = new mongoose.Schema({
     department: String,
     semester: String,
     price: Number,
-    image: String
+    image: String,
+    sellerId: mongoose.Schema.Types.ObjectId,
+    sellerEmail: String,
+    sellerName: String
   }],
   createdAt: {
     type: Date,

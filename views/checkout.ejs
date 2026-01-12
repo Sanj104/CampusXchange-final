@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmation - CampusXchange</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- EmailJS SDK - Version 4 -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
   <nav class="navbar">
-  <div class="container">
-    <h1 class="logo"><a href="/">CampusXchange</a></h1>
-    <div class="nav-links">
-      <a href="/">Home</a>
-      <% if (isAdmin) { %>
-        <a href="/admin/dashboard">Admin Panel</a>
-      <% } %>
-      <button onclick="logout()">Logout</button>
+    <div class="container">
+      <h1 class="logo"><a href="/">CampusXchange</a></h1>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/items/add">Sell Item</a>
+        <a href="/cart">Cart</a>
+        <button onclick="logout()">Logout</button>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
   <main class="container">
     <div class="checkout-success">
@@ -27,19 +27,25 @@
       <h2>Order Placed Successfully!</h2>
       <p>Your order has been confirmed. The seller(s) will be notified via email.</p>
       
+      <!-- Email Status Indicator -->
+      <div id="email-status" style="margin: 20px 0; padding: 15px; border-radius: 5px; background-color: #f0f0f0; border: 1px solid #ddd;">
+        <p style="margin: 0;">📧 Sending notifications to sellers...</p>
+      </div>
+
       <div class="order-details">
         <h3>Order Details</h3>
-        <p><strong>Order ID:</strong> <%= order._id %></p>
+        <p><strong>Order ID:</strong> #<%= order._id %></p>
         <p><strong>Total Amount:</strong> ₹<%= order.totalPrice %></p>
+        <p><strong>Buyer:</strong> <%= order.buyerName %> (<%= order.buyerEmail %>)</p>
         
         <div class="order-items">
           <h4>Items Ordered:</h4>
           <% order.items.forEach(item => { %>
-            <div class="order-item">
+            <div class="order-item" style="padding: 15px; margin: 10px 0; background: #f9f9f9; border-left: 3px solid #007bff; border-radius: 4px;">
               <p><strong><%= item.itemName %></strong></p>
               <p><%= item.department %> - Semester <%= item.semester %></p>
-              <p>Price: ₹<%= item.price %></p>
-              <p class="seller-info">Seller: <%= item.sellerName %> (<%= item.sellerEmail %>)</p>
+              <p><strong>Price:</strong> ₹<%= item.price %></p>
+              <p class="seller-info"><strong>Seller:</strong> <%= item.sellerName %> (<%= item.sellerEmail %>)</p>
             </div>
           <% }) %>
         </div>
@@ -59,36 +65,116 @@
   </main>
 
   <script>
+    console.log('🚀 Checkout page loaded');
+
     // Initialize EmailJS
     (function() {
-      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your EmailJS public key
+      emailjs.init('YiwUqPWnMsioKRJV_');
+      console.log('✅ EmailJS initialized with public key');
     })();
 
-    // Send emails to sellers
-    const orderData = <%- JSON.stringify(order) %>;
-    
-    orderData.items.forEach(item => {
-      const templateParams = {
-        to_email: item.sellerEmail,
-        seller_name: item.sellerName,
-        buyer_name: orderData.buyerName,
-        buyer_email: orderData.buyerEmail,
-        item_name: item.itemName,
-        item_price: item.price,
-        order_id: orderData._id
-      };
+    // Get data from server
+    const sellerDataJSON = '<%- sellerDataJSON %>';
+    const sellerData = JSON.parse(sellerDataJSON);;
+    const serviceId = 'service_3orpc5b';
+    const templateId = 'template_c9ois3e';
 
-      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-        .then(function(response) {
-          console.log('Email sent to ' + item.sellerEmail, response);
-        }, function(error) {
-          console.log('Email failed to ' + item.sellerEmail, error);
-        });
+    console.log('📋 Configuration:');
+    console.log('Service ID:', serviceId);
+    console.log('Template ID:', templateId);
+    console.log('Seller Data:', sellerData);
+
+    // Send emails to all sellers
+    async function sendEmailsToSellers() {
+      const statusDiv = document.getElementById('email-status');
+      
+      if (!sellerData || sellerData.length === 0) {
+        console.error('❌ No seller data available');
+        statusDiv.innerHTML = '<p style="color: red; margin: 0;">✗ No sellers to notify</p>';
+        statusDiv.style.backgroundColor = '#f8d7da';
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+      const totalEmails = sellerData.length;
+
+      statusDiv.innerHTML = `<p style="margin: 0;">📧 Sending ${totalEmails} notification(s)...</p>`;
+      console.log(`📤 Attempting to send ${totalEmails} email(s)`);
+
+      for (let i = 0; i < sellerData.length; i++) {
+        const item = sellerData[i];
+        
+        try {
+          console.log(`\n📧 Email ${i + 1}/${totalEmails}`);
+          console.log('To:', item.sellerEmail);
+          console.log('Seller:', item.sellerName);
+          console.log('Item:', item.itemName);
+
+          const templateParams = {
+            to_email: item.sellerEmail,
+            seller_name: item.sellerName,
+            buyer_name: item.buyerName,
+            buyer_email: item.buyerEmail,
+            item_name: item.itemName,
+            price: item.price
+          };
+
+          console.log('Template params:', templateParams);
+
+          const response = await emailjs.send(
+            serviceId,
+            templateId,
+            templateParams
+          );
+
+          successCount++;
+          console.log('✅ SUCCESS! Email sent to', item.sellerEmail);
+          console.log('Response:', response);
+
+        } catch (error) {
+          failCount++;
+          console.error('❌ FAILED to send to', item.sellerEmail);
+          console.error('Error:', error);
+          console.error('Error text:', error.text);
+          console.error('Error status:', error.status);
+        }
+      }
+
+      console.log(`\n📊 Results: ${successCount} success, ${failCount} failed`);
+
+      // Update status display
+      if (failCount === 0) {
+        statusDiv.innerHTML = `<p style="color: green; margin: 0;">✓ All ${successCount} seller(s) have been notified!</p>`;
+        statusDiv.style.backgroundColor = '#d4edda';
+        statusDiv.style.borderColor = '#c3e6cb';
+      } else if (successCount > 0) {
+        statusDiv.innerHTML = `<p style="color: orange; margin: 0;">⚠ ${successCount} email(s) sent, ${failCount} failed. Check console for details.</p>`;
+        statusDiv.style.backgroundColor = '#fff3cd';
+        statusDiv.style.borderColor = '#ffc107';
+      } else {
+        statusDiv.innerHTML = `<p style="color: red; margin: 0;">✗ Failed to send all notifications. Please check console.</p>`;
+        statusDiv.style.backgroundColor = '#f8d7da';
+        statusDiv.style.borderColor = '#f5c6cb';
+      }
+    }
+
+    // Run when page loads
+    window.addEventListener('load', () => {
+      console.log('📧 Starting email send process...');
+      sendEmailsToSellers();
     });
 
+    // Logout function
     async function logout() {
-      const res = await fetch('/auth/logout', { method: 'POST' });
-      if (res.ok) window.location.href = '/';
+      try {
+        const res = await fetch('/auth/logout', { method: 'POST' });
+        if (res.ok) {
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
     }
   </script>
 </body>
