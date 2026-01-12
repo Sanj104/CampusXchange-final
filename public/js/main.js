@@ -46,12 +46,34 @@ function displayItems(items) {
         <p><strong>Department:</strong> ${item.department}</p>
         <p><strong>Semester:</strong> ${item.semester}</p>
         <p class="item-price">₹${item.price}</p>
+        
+        <!-- LIKES SECTION -->
+        <div class="item-likes">
+          <button 
+            class="like-btn" 
+            id="like-btn-${item._id}"
+            onclick="toggleLike('${item._id}')"
+            ${!isAuthenticated ? 'disabled' : ''}
+          >
+            ❤️
+          </button>
+          <span class="likes-count" id="likes-count-${item._id}">${item.likesCount || 0}</span>
+          <span class="likes-text">likes</span>
+        </div>
+        
         <button class="btn-add-cart" onclick="addToCart('${item._id}')" ${!isAuthenticated ? 'disabled' : ''}>
           ${isAuthenticated ? 'Add to Cart' : 'Login to Add'}
         </button>
       </div>
     </div>
   `).join('');
+
+  // Check which items user has liked (only if authenticated)
+  if (isAuthenticated) {
+    items.forEach(item => {
+      checkIfLiked(item._id);
+    });
+  }
 }
 
 // Add to cart
@@ -131,3 +153,73 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('departmentFilter')?.addEventListener('change', applyFilters);
   document.getElementById('semesterFilter')?.addEventListener('change', applyFilters);
 });
+
+// Toggle like/unlike
+async function toggleLike(itemId) {
+  if (!isAuthenticated) {
+    alert('Please login to like items');
+    window.location.href = '/auth/login';
+    return;
+  }
+
+  const likeBtn = document.getElementById(`like-btn-${itemId}`);
+  const likesCountElement = document.getElementById(`likes-count-${itemId}`);
+  
+  // Disable button while processing
+  likeBtn.disabled = true;
+
+  try {
+    const res = await fetch(`/rating/like/${itemId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Update likes count
+      likesCountElement.textContent = data.likesCount;
+      
+      // Update button appearance
+      if (data.liked) {
+        likeBtn.textContent = '❤️';
+        likeBtn.classList.add('liked');
+      } else {
+        likeBtn.textContent = '🤍';
+        likeBtn.classList.remove('liked');
+      }
+    } else {
+      alert(data.error || 'Failed to update like');
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    alert('An error occurred. Please try again.');
+  } finally {
+    likeBtn.disabled = false;
+  }
+}
+
+// Check if user has liked an item
+async function checkIfLiked(itemId) {
+  try {
+    const res = await fetch(`/rating/check-like/${itemId}`);
+    const data = await res.json();
+
+    if (res.ok) {
+      const likeBtn = document.getElementById(`like-btn-${itemId}`);
+      if (likeBtn) {
+        if (data.liked) {
+          likeBtn.textContent = '❤️';
+          likeBtn.classList.add('liked');
+        } else {
+          likeBtn.textContent = '🤍';
+          likeBtn.classList.remove('liked');
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking like status:', error);
+  }
+}

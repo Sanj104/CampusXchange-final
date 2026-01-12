@@ -9,6 +9,8 @@ const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
 const cartRoutes = require('./routes/cart');
+const ratingRoutes = require('./routes/rating');
+
 
 const app = express();
 
@@ -58,6 +60,8 @@ app.use('/auth', authRoutes);
 app.use('/items', itemRoutes);
 app.use('/', cartRoutes);
 app.use('/admin', adminRoutes);
+app.use('/rating', ratingRoutes);
+
 
 // Home route
 app.get('/', (req, res) => {
