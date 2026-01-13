@@ -20,6 +20,11 @@ router.post('/add-to-cart', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Item not found' });
     }
 
+    // ✨ NEW: Check if item is already sold
+    if (item.sold) {
+      return res.status(400).json({ error: 'This item is already sold' });
+    }
+
     // Find user
     const user = await User.findById(req.session.userId);
     
@@ -33,7 +38,7 @@ router.post('/add-to-cart', requireAuth, async (req, res) => {
     }
 
     // Prevent buying own items
-    if (item.sellerId && item.sellerId.toString() === req.session.userId.toString()) {
+    if (item.seller && item.seller.toString() === req.session.userId.toString()) {
       return res.status(400).json({ error: 'You cannot buy your own item' });
     }
 
@@ -45,7 +50,7 @@ router.post('/add-to-cart', requireAuth, async (req, res) => {
       semester: item.semester,
       price: item.price,
       image: item.image,
-      sellerId: item.sellerId,
+      seller: item.seller,
       sellerEmail: item.sellerEmail,
       sellerName: item.sellerName
     });
@@ -69,7 +74,7 @@ router.get('/cart', requireAuth, async (req, res) => {
     res.render('cart', { 
       cartItems, 
       total,
-      isAdmin: user.isAdmin || false  // ← Add this
+      isAdmin: user.isAdmin || false
     });
   } catch (error) {
     console.error('CART ERROR:', error);
@@ -95,7 +100,7 @@ router.post('/remove-from-cart', requireAuth, async (req, res) => {
   }
 });
 
-// CHECKOUT - FIXED FOR EMAILJS
+
 // CHECKOUT - FIXED FOR EMAILJS
 router.get('/checkout', requireAuth, async (req, res) => {
   try {
@@ -142,6 +147,19 @@ router.get('/checkout', requireAuth, async (req, res) => {
     await order.save();
     console.log('Order saved:', order._id);
 
+    // ✨ Mark items as sold instead of deleting them
+    const itemIds = itemsWithDetails.map(item => item.itemId);
+    await Item.updateMany(
+      { _id: { $in: itemIds } },
+      { 
+        $set: { 
+          sold: true,
+          soldDate: new Date()
+        } 
+      }
+    );
+    console.log('✅ Items marked as sold');
+
     // Prepare seller data for EmailJS
     const sellerData = itemsWithDetails.map(item => ({
       sellerEmail: item.sellerEmail,
@@ -162,7 +180,7 @@ router.get('/checkout', requireAuth, async (req, res) => {
     // Render checkout page with all necessary data
     res.render('checkout', {
       order: order,
-      sellerDataJSON: JSON.stringify(sellerData)  // ← Changed this line
+      sellerDataJSON: JSON.stringify(sellerData)
     });
 
     console.log('=== CHECKOUT END ===');

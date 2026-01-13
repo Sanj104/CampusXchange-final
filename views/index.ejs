@@ -30,32 +30,38 @@
 
   <main class="container">
     <section class="filters">
-      <h2>Browse Items</h2>
-      <div class="filter-controls">
-        <select id="departmentFilter">
-          <option value="">All Departments</option>
-          <option value="Computer Science">Computer Science</option>
-          <option value="Electronics">Electronics</option>
-          <option value="Mechanical">Mechanical</option>
-          <option value="Civil">Civil</option>
-          <option value="Other">Other</option>
-        </select>
-        <select id="semesterFilter">
-          <option value="">All Semesters</option>
-          <option value="1">Semester 1</option>
-          <option value="2">Semester 2</option>
-          <option value="3">Semester 3</option>
-          <option value="4">Semester 4</option>
-          <option value="5">Semester 5</option>
-          <option value="6">Semester 6</option>
-          <option value="7">Semester 7</option>
-          <option value="8">Semester 8</option>
-        </select>
-        <button onclick="applyFilters()">Filter</button>
-        <button onclick="clearFilters()">Clear</button>
-      </div>
-    </section>
-
+  <h2>Browse Items</h2>
+  <div class="filter-controls">
+    <select id="departmentFilter">
+      <option value="">All Departments</option>
+      <option value="Computer Science">Computer Science</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Mechanical">Mechanical</option>
+      <option value="Civil">Civil</option>
+      <option value="Other">Other</option>
+    </select>
+    <select id="semesterFilter">
+      <option value="">All Semesters</option>
+      <option value="1">Semester 1</option>
+      <option value="2">Semester 2</option>
+      <option value="3">Semester 3</option>
+      <option value="4">Semester 4</option>
+      <option value="5">Semester 5</option>
+      <option value="6">Semester 6</option>
+      <option value="7">Semester 7</option>
+      <option value="8">Semester 8</option>
+    </select>
+    <!-- ✨ NEW: Sort dropdown -->
+    <select id="sortFilter">
+      <option value="">Newest First</option>
+      <option value="likes">Most Liked</option>
+      <option value="price-low">Price: Low to High</option>
+      <option value="price-high">Price: High to Low</option>
+    </select>
+    <button onclick="applyFilters()">Filter</button>
+    <button onclick="clearFilters()">Clear</button>
+  </div>
+</section>
     <section id="itemsContainer" class="items-grid">
       <!-- Items will be loaded here dynamically -->
     </section>

@@ -16,10 +16,11 @@ async function checkAuth() {
   }
 }
 
-// Load all items
-async function loadItems() {
+// Load all items with optional sorting
+async function loadItems(sortBy = '') {
   try {
-    const res = await fetch('/items');
+    const url = sortBy ? `/items?sort=${sortBy}` : '/items';
+    const res = await fetch(url);
     allItems = await res.json();
     displayItems(allItems);
   } catch (error) {
@@ -30,6 +31,7 @@ async function loadItems() {
 }
 
 // Display items
+// Display items
 function displayItems(items) {
   const container = document.getElementById('itemsContainer');
   
@@ -39,8 +41,9 @@ function displayItems(items) {
   }
 
   container.innerHTML = items.map(item => `
-    <div class="item-card">
-      <img src="${item.image}" alt="${item.itemName}" onerror="this.src='/uploads/default-item.jpg'">
+    <div class="item-card ${item.sold ? 'sold-item' : ''}">
+      ${item.sold ? '<div class="sold-badge">SOLD OUT</div>' : ''}
+      <img src="${item.image}" alt="${item.itemName}" onerror="this.src='/uploads/default-item.jpg'" ${item.sold ? 'style="opacity: 0.5;"' : ''}>
       <div class="item-details">
         <h3>${item.itemName}</h3>
         <p><strong>Department:</strong> ${item.department}</p>
@@ -53,7 +56,7 @@ function displayItems(items) {
             class="like-btn" 
             id="like-btn-${item._id}"
             onclick="toggleLike('${item._id}')"
-            ${!isAuthenticated ? 'disabled' : ''}
+            ${!isAuthenticated || item.sold ? 'disabled' : ''}
           >
             ❤️
           </button>
@@ -61,8 +64,12 @@ function displayItems(items) {
           <span class="likes-text">likes</span>
         </div>
         
-        <button class="btn-add-cart" onclick="addToCart('${item._id}')" ${!isAuthenticated ? 'disabled' : ''}>
-          ${isAuthenticated ? 'Add to Cart' : 'Login to Add'}
+        <button 
+          class="btn-add-cart" 
+          onclick="addToCart('${item._id}')" 
+          ${!isAuthenticated || item.sold ? 'disabled' : ''}
+        >
+          ${item.sold ? 'Sold Out' : (isAuthenticated ? 'Add to Cart' : 'Login to Add')}
         </button>
       </div>
     </div>
@@ -75,7 +82,6 @@ function displayItems(items) {
     });
   }
 }
-
 // Add to cart
 async function addToCart(itemId) {
   if (!isAuthenticated) {
@@ -106,15 +112,17 @@ async function addToCart(itemId) {
   }
 }
 
-// Apply filters
+// Apply filters (✨ UPDATED to include sorting)
 async function applyFilters() {
   const department = document.getElementById('departmentFilter').value;
   const semester = document.getElementById('semesterFilter').value;
+  const sortBy = document.getElementById('sortFilter').value;
 
   try {
     const params = new URLSearchParams();
     if (department) params.append('department', department);
     if (semester) params.append('semester', semester);
+    if (sortBy) params.append('sort', sortBy);
 
     const res = await fetch(`/items/filter?${params.toString()}`);
     const items = await res.json();
@@ -125,11 +133,12 @@ async function applyFilters() {
   }
 }
 
-// Clear filters
+// Clear filters (✨ UPDATED to clear sort too)
 function clearFilters() {
   document.getElementById('departmentFilter').value = '';
   document.getElementById('semesterFilter').value = '';
-  displayItems(allItems);
+  document.getElementById('sortFilter').value = '';
+  loadItems(); // Reload with default sorting
 }
 
 // Logout function
@@ -149,9 +158,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   await loadItems();
 
-  // Add enter key support for filters
+  // Add change listeners for filters
   document.getElementById('departmentFilter')?.addEventListener('change', applyFilters);
   document.getElementById('semesterFilter')?.addEventListener('change', applyFilters);
+  document.getElementById('sortFilter')?.addEventListener('change', applyFilters); // ✨ NEW
 });
 
 // Toggle like/unlike

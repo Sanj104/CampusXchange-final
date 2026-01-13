@@ -29,36 +29,78 @@ const upload = multer({
   }
 });
 
+// GET all items (only unsold)
+// GET all items (only unsold)
+// GET all items (show both sold and unsold)
 router.get('/', async (req, res) => {
   try {
-    const items = await Item.find().sort({ createdAt: -1 });
+    const sortBy = req.query.sort;
+    
+    let sortOption = { createdAt: -1 };
+    if (sortBy === 'likes') sortOption = { likesCount: -1 };
+    else if (sortBy === 'price-low') sortOption = { price: 1 };
+    else if (sortBy === 'price-high') sortOption = { price: -1 };
+    
+    // ✨ Show ALL items (both sold and unsold)
+    const items = await Item.find().sort(sortOption);
+    
+    console.log('📦 Total items:', items.length);
     res.json(items);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching items' });
   }
 });
 
+// Filter items (show both sold and unsold)
 router.get('/filter', async (req, res) => {
   try {
-    const { department, semester } = req.query;
-    const filter = {};
-    if (department && department !== '') {
-      filter.department = department;
-    }
-    if (semester && semester !== '') {
-      filter.semester = semester;
-    }
-    const items = await Item.find(filter).sort({ createdAt: -1 });
+    const { department, semester, sort } = req.query;
+    
+    // ✨ Don't filter by sold status
+    let query = {};
+    if (department) query.department = department;
+    if (semester) query.semester = semester;
+    
+    let sortOption = { createdAt: -1 };
+    if (sort === 'likes') sortOption = { likesCount: -1 };
+    else if (sort === 'price-low') sortOption = { price: 1 };
+    else if (sort === 'price-high') sortOption = { price: -1 };
+    
+    const items = await Item.find(query).sort(sortOption);
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Error filtering items' });
+  }
+});
+// Filter items (only unsold, with sorting support)
+router.get('/filter', async (req, res) => {
+  try {
+    const { department, semester, sort } = req.query;
+    
+    // ✨ Always filter out sold items
+    let query = { sold: false };
+    if (department) query.department = department;
+    if (semester) query.semester = semester;
+    
+    // Sorting
+    let sortOption = { createdAt: -1 };
+    if (sort === 'likes') sortOption = { likesCount: -1 };
+    else if (sort === 'price-low') sortOption = { price: 1 };
+    else if (sort === 'price-high') sortOption = { price: -1 };
+    
+    const items = await Item.find(query).sort(sortOption);
     res.json(items);
   } catch (error) {
     res.status(500).json({ error: 'Error filtering items' });
   }
 });
 
+// ✨ GET route to display the add item form
 router.get('/add', requireAuth, (req, res) => {
   res.render('add-item');
 });
 
+// POST route to submit the add item form
 router.post('/add', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const { itemName, department, semester, price } = req.body;
@@ -68,10 +110,11 @@ router.post('/add', requireAuth, upload.single('image'), async (req, res) => {
       department,
       semester,
       price: parseFloat(price),
-      image: req.file ? `/uploads/${req.file.filename}` : '/uploads/default-item.jpg',
+      image: req.file ? `/uploads/${req.file.filename}` : '/uploads/placeholder.jpg',
       seller: user._id,
       sellerEmail: user.email,
-      sellerName: user.name
+      sellerName: user.name,
+      sold: false // ✨ NEW: Set sold to false by default
     });
     await item.save();
     res.json({ success: true, message: 'Item added successfully' });
@@ -79,5 +122,6 @@ router.post('/add', requireAuth, upload.single('image'), async (req, res) => {
     res.status(500).json({ error: 'Error adding item' });
   }
 });
+
 
 module.exports = router;
