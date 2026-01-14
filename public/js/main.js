@@ -1,6 +1,7 @@
 // ============================================
 // PUBLIC/JS/MAIN.JS
 // ============================================
+let searchTimeout = null;
 
 let allItems = [];
 let isAuthenticated = false;
@@ -231,5 +232,35 @@ async function checkIfLiked(itemId) {
     }
   } catch (error) {
     console.error('Error checking like status:', error);
+  }
+}
+
+// 🔍 Handle search input
+function handleSearchInput(value) {
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(() => {
+    searchItems(value);
+  }, 400); // debounce
+}
+
+// 🔍 Search items from backend
+async function searchItems(query) {
+  if (!query || query.trim() === '') {
+    loadItems(); // fallback to all items
+    return;
+  }
+
+  try {
+    const res = await fetch(`/items/search?q=${encodeURIComponent(query)}`);
+    const items = await res.json();
+    displayItems(items);
+
+    const countText = document.getElementById('itemsCount');
+    if (countText) {
+      countText.textContent = `Showing ${items.length} item(s)`;
+    }
+  } catch (error) {
+    console.error('Search failed:', error);
   }
 }

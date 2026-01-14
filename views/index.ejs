@@ -29,6 +29,26 @@
 </nav>
 
   <main class="container">
+    <section class="hero-search">
+  <div class="hero-search-box">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search for books, notes, electronics, and more..."
+        oninput="handleSearchInput(this.value)"
+      />
+    </div>
+    <button class="search-btn" onclick="handleSearchInput(document.getElementById('searchInput').value)">
+      🔍 Search
+    </button>
+  </div>
+
+  <p id="itemsCount" class="items-count">Showing all items</p>
+</section>
+
+
     <section class="filters">
   <h2>Browse Items</h2>
   <div class="filter-controls">

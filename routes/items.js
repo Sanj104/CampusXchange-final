@@ -123,5 +123,33 @@ router.post('/add', requireAuth, upload.single('image'), async (req, res) => {
   }
 });
 
+// 🔍 SEARCH ITEMS
+router.get('/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim() === '') {
+      return res.json([]);
+    }
+
+    const regex = new RegExp(q, 'i'); // case-insensitive
+
+    const items = await Item.find({
+      sold: false,
+      $or: [
+        { itemName: regex },
+        { department: regex },
+        { semester: regex },
+        { sellerName: regex }
+      ]
+    }).sort({ createdAt: -1 });
+
+    res.json(items);
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
 
 module.exports = router;
